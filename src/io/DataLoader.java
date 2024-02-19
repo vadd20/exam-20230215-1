@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,17 +26,12 @@ public class DataLoader {
      */
     public static List<Employee> readEmployeeData() throws IOException {
         try (Stream<String> lines = Files.lines(Paths.get(EMPLOYEE_FILENAME))) {
-
-            List<String> correctLines = EmployeesDataValidator.validate(lines);
-
-            return correctLines.stream()
+            return lines
                     .map(line -> line.split(SEPARATOR))
-                    .map(data -> new Employee(
-                            data[0],
-                            LocalDate.parse(data[1], DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                            Integer.parseInt(data[2])
-                    ))
-                    .collect(Collectors.toList());
+                    .filter(EmployeesDataValidator::validate)
+                    .map(Employee::buildNewEmployee)
+                    .toList();
         }
     }
+
 }
